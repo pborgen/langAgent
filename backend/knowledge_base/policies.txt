@@ -1,0 +1,4 @@
+Order Updates: Tracking updates may take up to 24 hours after label creation.
+Address Changes: Address changes are only possible before an order is marked as shipped.
+Damaged Items: Customers should submit photos within 7 days of delivery for damaged item claims.
+Subscription Cancellations: Subscription plans can be canceled any time and remain active until the end of the current billing cycle.
