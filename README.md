@@ -199,6 +199,169 @@ cd frontend
 npm run test
 ```
 
+## Local vLLM Setup (Automated)
+
+Use the automation scripts in `scripts/vllm/`.
+
+0. (Ubuntu) install system dependencies:
+
+```bash
+sudo scripts/vllm/bootstrap_system_deps.sh --with-redis
+```
+
+1. Install vLLM into a dedicated virtualenv:
+
+```bash
+scripts/vllm/setup_vllm.sh
+```
+
+2. (Optional) pre-download a model:
+
+```bash
+scripts/vllm/download_model.sh --model Qwen/Qwen2.5-7B-Instruct
+```
+
+3. Start OpenAI-compatible local API server:
+
+```bash
+scripts/vllm/start_server.sh --model Qwen/Qwen2.5-7B-Instruct --port 8001
+```
+
+4. Run smoke test:
+
+```bash
+scripts/vllm/smoke_test.sh --api-base http://127.0.0.1:8001 --model Qwen/Qwen2.5-7B-Instruct
+```
+
+One-command bootstrap + run:
+
+```bash
+scripts/vllm/run_all.sh --model Qwen/Qwen2.5-7B-Instruct
+```
+
+Docker one-command startup:
+
+```bash
+scripts/vllm/docker_up.sh
+```
+
+### GPU/CPU Auto Detection
+
+`scripts/vllm/start_server.sh` auto-detects runtime:
+
+- NVIDIA GPU present (`nvidia-smi` works) -> starts with `--device cuda`
+- Otherwise -> starts with `--device cpu`
+
+Override manually if needed:
+
+```bash
+scripts/vllm/start_server.sh --device cuda
+scripts/vllm/start_server.sh --device cpu
+```
+
+### Remote Access From Other Machines
+
+Start server in public mode and protect it with an API key:
+
+```bash
+scripts/vllm/start_server.sh \
+  --model Qwen/Qwen2.5-7B-Instruct \
+  --public \
+  --api-key "replace-with-strong-key"
+```
+
+Then open firewall port (Ubuntu UFW):
+
+```bash
+sudo ufw allow 8001/tcp
+```
+
+From another machine:
+
+```bash
+curl http://<GPU_MACHINE_IP>:8001/v1/models \
+  -H "Authorization: Bearer replace-with-strong-key"
+```
+
+### Redis Memory Proxy (Persistent Context)
+
+`vLLM` itself is stateless. To keep conversation context across requests, run the Redis-backed proxy:
+
+```bash
+scripts/vllm/start_memory_proxy.sh \
+  --host 0.0.0.0 \
+  --port 8010 \
+  --redis-url redis://127.0.0.1:6379/0 \
+  --vllm-api-base http://127.0.0.1:8001 \
+  --vllm-model Qwen/Qwen2.5-7B-Instruct \
+  --vllm-api-key "replace-with-strong-key" \
+  --proxy-api-key "replace-with-strong-key"
+```
+
+Call from another machine (same `session_id` keeps memory):
+
+```bash
+curl -X POST http://<GPU_MACHINE_IP>:8010/chat \
+  -H "Authorization: Bearer replace-with-strong-key" \
+  -H "Content-Type: application/json" \
+  -d '{"session_id":"demo-1","message":"My name is Paul"}'
+
+curl -X POST http://<GPU_MACHINE_IP>:8010/chat \
+  -H "Authorization: Bearer replace-with-strong-key" \
+  -H "Content-Type: application/json" \
+  -d '{"session_id":"demo-1","message":"What is my name?"}'
+```
+
+Inspect or clear session memory:
+
+```bash
+curl http://<GPU_MACHINE_IP>:8010/sessions/demo-1/messages \
+  -H "Authorization: Bearer replace-with-strong-key"
+
+curl -X DELETE http://<GPU_MACHINE_IP>:8010/sessions/demo-1/messages \
+  -H "Authorization: Bearer replace-with-strong-key"
+```
+
+### Run vLLM As systemd User Service
+
+Install + start persistent background service:
+
+```bash
+scripts/vllm/install_user_service.sh \
+  --model Qwen/Qwen2.5-7B-Instruct \
+  --api-key "replace-with-strong-key"
+```
+
+Useful service commands:
+
+```bash
+systemctl --user status vllm.service
+systemctl --user restart vllm.service
+journalctl --user -u vllm.service -f
+```
+
+Optional: keep service running even when not logged in:
+
+```bash
+sudo loginctl enable-linger "$USER"
+```
+
+Install memory proxy as a user service:
+
+```bash
+scripts/vllm/install_memory_proxy_user_service.sh \
+  --proxy-api-key "replace-with-strong-key" \
+  --vllm-api-key "replace-with-strong-key"
+```
+
+Manage memory proxy service:
+
+```bash
+systemctl --user status vllm-memory-proxy.service
+systemctl --user restart vllm-memory-proxy.service
+journalctl --user -u vllm-memory-proxy.service -f
+```
+
 ## Production Notes
 
 - Add ingestion pipeline for uploads (PDF/HTML/Docs) instead of static `backend/knowledge_base/*.txt`.
