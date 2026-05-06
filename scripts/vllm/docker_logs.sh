@@ -3,7 +3,7 @@ set -euo pipefail
 
 MODE="${1:-gpu}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ENV_FILE="$SCRIPT_DIR/.env.docker"
+ENV_FILE="$SCRIPT_DIR/.env.docker.local"
 
 if [[ ! -f "$ENV_FILE" ]]; then
   cp "$SCRIPT_DIR/.env.docker.example" "$ENV_FILE"

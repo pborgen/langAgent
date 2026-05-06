@@ -48,8 +48,24 @@ scripts/vllm/docker_up.sh
 scripts/vllm/docker_up.sh cpu
 ```
 
-First run creates `scripts/vllm/.env.docker` from `scripts/vllm/.env.docker.example`.
+First run creates `scripts/vllm/.env.docker.local` from `scripts/vllm/.env.docker.example`.
 Update API keys there before exposing ports publicly.
+
+Disable auth for local-only use:
+
+```bash
+# in scripts/vllm/.env.docker.local
+VLLM_REQUIRE_AUTH=false
+VLLM_API_KEY=
+PROXY_API_KEY=
+```
+
+Then restart:
+
+```bash
+scripts/vllm/docker_down.sh
+scripts/vllm/docker_up.sh
+```
 
 Stop and inspect logs:
 

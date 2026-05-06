@@ -192,6 +192,14 @@ Backend:
 pytest -q backend/tests
 ```
 
+Docker vLLM integration test (opt-in, expensive):
+
+```bash
+RUN_DOCKER_INTEGRATION=1 \
+VLLM_DOCKER_ENV_FILE=scripts/vllm/.env.docker.local \
+pytest -q backend/tests/test_vllm_docker_integration.py
+```
+
 Frontend smoke checks:
 
 ```bash

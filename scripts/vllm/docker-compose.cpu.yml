@@ -16,14 +16,16 @@ services:
       - redis
     environment:
       HUGGING_FACE_HUB_TOKEN: "${HUGGING_FACE_HUB_TOKEN:-}"
-    command: >
-      --model ${VLLM_MODEL:-Qwen/Qwen2.5-7B-Instruct}
-      --host 0.0.0.0
-      --port 8001
-      --api-key ${VLLM_API_KEY:-change-me}
-      --dtype ${VLLM_DTYPE:-auto}
-      --max-model-len ${VLLM_MAX_MODEL_LEN:-4096}
-      --device cpu
+      VLLM_REQUIRE_AUTH: "${VLLM_REQUIRE_AUTH:-true}"
+      VLLM_API_KEY: "${VLLM_API_KEY:-}"
+    entrypoint: ["/bin/sh", "-lc"]
+    command:
+      - |
+        ARGS="--model ${VLLM_MODEL:-Qwen/Qwen2.5-7B-Instruct} --host 0.0.0.0 --port 8001 --dtype ${VLLM_DTYPE:-auto} --max-model-len ${VLLM_MAX_MODEL_LEN:-4096} --device cpu";
+        if [ "${VLLM_REQUIRE_AUTH:-true}" = "true" ] && [ -n "${VLLM_API_KEY:-}" ]; then
+          ARGS="$$ARGS --api-key ${VLLM_API_KEY}";
+        fi;
+        exec python3 -m vllm.entrypoints.openai.api_server $$ARGS
     ports:
       - "${VLLM_PORT:-8001}:8001"
     volumes:
@@ -42,8 +44,8 @@ services:
       REDIS_URL: "redis://redis:6379/0"
       VLLM_API_BASE: "http://vllm:8001"
       VLLM_MODEL: "${VLLM_MODEL:-Qwen/Qwen2.5-7B-Instruct}"
-      VLLM_API_KEY: "${VLLM_API_KEY:-change-me}"
-      PROXY_API_KEY: "${PROXY_API_KEY:-change-me}"
+      VLLM_API_KEY: "${VLLM_API_KEY:-}"
+      PROXY_API_KEY: "${PROXY_API_KEY:-}"
       MEMORY_MAX_MESSAGES: "${MEMORY_MAX_MESSAGES:-20}"
       REQUEST_TIMEOUT_SECONDS: "${REQUEST_TIMEOUT_SECONDS:-120}"
     ports:
