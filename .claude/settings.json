@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import ast; [ast.parse\\(open\\(f\\).read\\(\\)\\) for f in ['backend/llm.py','backend/app_config.py','backend/customer_support_agent.py','backend/agent_example.py','backend/support_api.py']]\")",
+      "Bash(python3 -c \"import ast; [ast.parse\\(open\\(f\\).read\\(\\)\\) for f in ['backend/llm.py','backend/app_config.py','backend/customer_support_agent.py','backend/agent_example.py','backend/support_api.py']]\")",
+      "Bash(OPENAI_API_KEY='' OPENAI_BASE_URL=http://localhost:11434/v1 AGENT_BACKEND=langgraph python3 -c ' *)"
+    ]
+  }
+}

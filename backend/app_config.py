@@ -6,6 +6,7 @@ from dataclasses import dataclass
 class AppConfig:
     agent_backend: str  # "langgraph" or "claude"
     openai_api_key: str
+    openai_base_url: str  # optional; set to point at a local/OpenAI-compatible server
     openai_model: str
     anthropic_api_key: str
     anthropic_model: str
@@ -25,6 +26,7 @@ def load_config() -> AppConfig:
     return AppConfig(
         agent_backend=os.getenv("AGENT_BACKEND", "langgraph").strip().lower(),
         openai_api_key=os.getenv("OPENAI_API_KEY", "").strip(),
+        openai_base_url=os.getenv("OPENAI_BASE_URL", "").strip(),
         openai_model=os.getenv("OPENAI_MODEL", "gpt-4o-mini").strip(),
         anthropic_api_key=os.getenv("ANTHROPIC_API_KEY", "").strip(),
         anthropic_model=os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5").strip(),
@@ -43,8 +45,12 @@ def validate_config(config: AppConfig) -> dict[str, list[str]]:
         if not config.anthropic_api_key:
             errors.append("ANTHROPIC_API_KEY is required when AGENT_BACKEND=claude.")
     else:
-        if not config.openai_api_key:
-            errors.append("OPENAI_API_KEY is required for chat/agent endpoints.")
+        # A local/OpenAI-compatible server (e.g. Ollama, LM Studio, vLLM) via
+        # OPENAI_BASE_URL usually doesn't need a real key, so relax the requirement.
+        if not config.openai_api_key and not config.openai_base_url:
+            errors.append("OPENAI_API_KEY is required for chat/agent endpoints (or set OPENAI_BASE_URL for a local LLM).")
+        if config.openai_base_url:
+            warnings.append(f"Using custom OpenAI-compatible endpoint: {config.openai_base_url}")
 
     if config.agent_backend not in ("langgraph", "claude"):
         errors.append(f"AGENT_BACKEND must be 'langgraph' or 'claude', got '{config.agent_backend}'.")

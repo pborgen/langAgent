@@ -129,9 +129,18 @@ async def lifespan(app: FastAPI):
         else:
             _log_event("startup_partial", backend="claude", reason="missing_anthropic_api_key", agent_ready=False)
     else:
-        if config.openai_api_key:
-            app.state.agent = SupportAgent(model=config.openai_model)
-            _log_event("startup_ready", backend="langgraph", agent_model=config.openai_model)
+        if config.openai_api_key or config.openai_base_url:
+            app.state.agent = SupportAgent(
+                model=config.openai_model,
+                base_url=config.openai_base_url or None,
+                api_key=config.openai_api_key or None,
+            )
+            _log_event(
+                "startup_ready",
+                backend="langgraph",
+                agent_model=config.openai_model,
+                base_url=config.openai_base_url or "default",
+            )
         else:
             _log_event("startup_partial", backend="langgraph", reason="missing_openai_api_key", agent_ready=False)
 

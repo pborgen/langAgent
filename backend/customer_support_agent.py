@@ -11,10 +11,11 @@ from typing import Annotated, Literal, Protocol, TypedDict
 from dotenv import load_dotenv
 from langchain_core.messages import AIMessage, AnyMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.tools import tool
-from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
+
+from .llm import build_chat_openai
 
 
 ROOT = Path(__file__).resolve().parent
@@ -167,10 +168,15 @@ class SupportState(TypedDict, total=False):
 
 
 class SupportAgent:
-    def __init__(self, model: str = "gpt-4o-mini") -> None:
+    def __init__(
+        self,
+        model: str = "gpt-4o-mini",
+        base_url: str | None = None,
+        api_key: str | None = None,
+    ) -> None:
         load_dotenv()
         self.kb = build_knowledge_base()
-        self.llm = ChatOpenAI(model=model, temperature=0)
+        self.llm = build_chat_openai(model=model, base_url=base_url, api_key=api_key)
         self.tool_llm = self.llm.bind_tools(TOOLS)
         self.graph = self._build_graph()
 
@@ -359,13 +365,24 @@ def main() -> None:
     parser.add_argument("--session-id", default="demo-session")
     parser.add_argument("--customer-id", default="cust-001")
     parser.add_argument("--model", default="gpt-4o-mini")
+    parser.add_argument(
+        "--base-url",
+        default=None,
+        help="OpenAI-compatible endpoint for a local LLM (e.g. http://localhost:11434/v1). "
+        "Falls back to OPENAI_BASE_URL.",
+    )
     parser.add_argument("--approve", action="store_true", help="Approve escalation if needed")
     args = parser.parse_args()
 
-    if not os.getenv("OPENAI_API_KEY"):
-        raise RuntimeError("Set OPENAI_API_KEY in your environment or .env file.")
+    load_dotenv()
+    base_url = args.base_url or os.getenv("OPENAI_BASE_URL", "").strip() or None
+    if not base_url and not os.getenv("OPENAI_API_KEY"):
+        raise RuntimeError(
+            "Set OPENAI_API_KEY in your environment or .env file, "
+            "or pass --base-url / OPENAI_BASE_URL to use a local LLM."
+        )
 
-    agent = SupportAgent(model=args.model)
+    agent = SupportAgent(model=args.model, base_url=base_url)
     output = agent.chat(
         session_id=args.session_id,
         customer_id=args.customer_id,

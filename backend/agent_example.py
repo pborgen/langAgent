@@ -5,7 +5,8 @@ from typing import Dict, List
 from dotenv import load_dotenv
 from langchain_core.messages import HumanMessage, SystemMessage, ToolMessage
 from langchain_core.tools import tool
-from langchain_openai import ChatOpenAI
+
+from .llm import build_chat_openai
 
 
 WORKSPACE_ROOT = Path(__file__).resolve().parent.parent
@@ -58,9 +59,14 @@ TOOLS = [list_files, read_text, write_text, finish]
 TOOL_REGISTRY: Dict[str, object] = {tool_.name: tool_ for tool_ in TOOLS}
 
 
-def run_autonomous_agent(objective: str, max_steps: int = 12, model: str = "gpt-4o-mini") -> str:
+def run_autonomous_agent(
+    objective: str,
+    max_steps: int = 12,
+    model: str = "gpt-4o-mini",
+    base_url: str | None = None,
+) -> str:
     load_dotenv()
-    llm = ChatOpenAI(model=model, temperature=0).bind_tools(TOOLS)
+    llm = build_chat_openai(model=model, base_url=base_url).bind_tools(TOOLS)
 
     system_prompt = (
         "You are an autonomous project agent.\n"
@@ -109,9 +115,17 @@ def main() -> None:
     parser.add_argument("objective", help="Goal for the agent to complete")
     parser.add_argument("--max-steps", type=int, default=12, help="Maximum tool/action loop steps")
     parser.add_argument("--model", default="gpt-4o-mini", help="OpenAI chat model name")
+    parser.add_argument(
+        "--base-url",
+        default=None,
+        help="OpenAI-compatible endpoint for a local LLM (e.g. http://localhost:11434/v1). "
+        "Falls back to OPENAI_BASE_URL.",
+    )
     args = parser.parse_args()
 
-    result = run_autonomous_agent(args.objective, max_steps=args.max_steps, model=args.model)
+    result = run_autonomous_agent(
+        args.objective, max_steps=args.max_steps, model=args.model, base_url=args.base_url
+    )
     print("\n=== Final Result ===")
     print(result)
 

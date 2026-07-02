@@ -33,6 +33,43 @@ Startup validation flags:
 - `OPENAI_MODEL` (default: `gpt-4o-mini`)
 - `STRICT_STARTUP_VALIDATION` (default: `false`)
 
+## Use a Local LLM (Ollama / LM Studio / vLLM)
+
+The `langgraph` (OpenAI) backend talks to any OpenAI-compatible endpoint, so you
+can run it fully offline against a local model. Set `OPENAI_BASE_URL` in `.env`
+(or pass `--base-url` on the CLI). When a base URL is set, `OPENAI_API_KEY` is
+optional.
+
+Example with [Ollama](https://ollama.com):
+
+```bash
+ollama pull llama3.1
+ollama serve            # serves an OpenAI-compatible API on :11434
+```
+
+`.env`:
+
+```bash
+AGENT_BACKEND=langgraph
+OPENAI_BASE_URL=http://localhost:11434/v1
+OPENAI_MODEL=llama3.1
+# OPENAI_API_KEY can be left blank for local servers
+```
+
+Or per-command:
+
+```bash
+python -m backend.agent_example "..." --base-url http://localhost:11434/v1 --model llama3.1
+python -m backend.customer_support_agent "Where is order 1001?" --base-url http://localhost:11434/v1 --model llama3.1
+```
+
+Notes:
+
+- The support agent relies on **tool calling**, so pick a local model that
+  supports it well (e.g. `llama3.1`, `qwen2.5`, `mistral-nemo`).
+- Pinecone RAG still uses OpenAI embeddings; keep `USE_PINECONE=false` (the
+  default local retriever) to stay fully offline.
+
 ## Repo Structure
 
 - `backend/`: FastAPI API, LangGraph agent, ingestion scripts, and backend tests
