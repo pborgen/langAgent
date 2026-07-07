@@ -2,7 +2,7 @@
 
 This repo now includes a minimal autonomous-style LangChain agent:
 
-- file: `backend/agent_example.py`
+- file: `backend/app/agent_example.py`
 - style: tool-calling loop (plan -> act -> observe -> repeat)
 - goal: complete a user objective and stop by calling a `finish` tool
 
@@ -59,8 +59,8 @@ OPENAI_MODEL=llama3.1
 Or per-command:
 
 ```bash
-python -m backend.agent_example "..." --base-url http://localhost:11434/v1 --model llama3.1
-python -m backend.customer_support_agent "Where is order 1001?" --base-url http://localhost:11434/v1 --model llama3.1
+python -m backend.app.agent_example "..." --base-url http://localhost:11434/v1 --model llama3.1
+python -m backend.app.customer_support_agent "Where is order 1001?" --base-url http://localhost:11434/v1 --model llama3.1
 ```
 
 Notes:
@@ -79,7 +79,7 @@ Notes:
 ## Run
 
 ```bash
-python -m backend.agent_example "Create a file called notes/todo.txt with 3 project ideas."
+python -m backend.app.agent_example "Create a file called notes/todo.txt with 3 project ideas."
 ```
 
 Optional flags:
@@ -102,8 +102,8 @@ It is intentionally constrained to this project directory for safety.
 
 This repo also includes a SaaS-style customer support agent scaffold:
 
-- file: `backend/customer_support_agent.py`
-- API: `backend/support_api.py`
+- file: `backend/app/customer_support_agent.py`
+- API: `backend/app/support_api.py`
 - sample docs: `backend/knowledge_base/*.txt`
 
 Core features implemented:
@@ -117,9 +117,9 @@ Core features implemented:
 ### Run CLI demo
 
 ```bash
-python3 -m backend.customer_support_agent "Where is order 1001?" --session-id s1 --customer-id c1
-python3 -m backend.customer_support_agent "Customer threatens legal action" --session-id s2 --customer-id c2
-python3 -m backend.customer_support_agent "Please escalate this issue" --session-id s2 --customer-id c2 --approve
+python3 -m backend.app.customer_support_agent "Where is order 1001?" --session-id s1 --customer-id c1
+python3 -m backend.app.customer_support_agent "Customer threatens legal action" --session-id s2 --customer-id c2
+python3 -m backend.app.customer_support_agent "Please escalate this issue" --session-id s2 --customer-id c2 --approve
 ```
 
 ### Use Pinecone for RAG
@@ -137,7 +137,7 @@ EMBEDDING_MODEL=text-embedding-3-small
 2. Index your local docs into Pinecone:
 
 ```bash
-python3 -m backend.index_kb_pinecone --index "$PINECONE_INDEX_NAME" --namespace "$PINECONE_NAMESPACE"
+python3 -m backend.app.index_kb_pinecone --index "$PINECONE_INDEX_NAME" --namespace "$PINECONE_NAMESPACE"
 ```
 
 3. Run the support agent normally (it auto-switches to Pinecone when `USE_PINECONE=true`).
@@ -145,7 +145,7 @@ python3 -m backend.index_kb_pinecone --index "$PINECONE_INDEX_NAME" --namespace 
 ### Run API
 
 ```bash
-uvicorn backend.support_api:app --reload
+uvicorn backend.app.support_api:app --reload
 ```
 
 ### Frontend (React + Vite + TanStack)
@@ -182,7 +182,7 @@ Build frontend for production and serve it from FastAPI `/`:
 cd frontend
 npm run build
 cd ..
-uvicorn backend.support_api:app --reload
+uvicorn backend.app.support_api:app --reload
 ```
 
 Example requests:

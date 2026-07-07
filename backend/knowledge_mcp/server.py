@@ -33,8 +33,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 
-from backend.customer_support_agent import KB_DIR, build_knowledge_base
-from backend.llm import build_chat_openai
+from backend.app.customer_support_agent import KB_DIR, build_knowledge_base
+from backend.app.llm import build_chat_openai
 
 load_dotenv()
 

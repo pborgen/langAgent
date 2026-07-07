@@ -148,7 +148,7 @@ Completed in codebase:
 
 - Backend test harness added with API and routing tests (`backend/tests/`).
 - Structured logging added in API and agent turn flow.
-- Startup config loading/validation added (`backend/app_config.py` + API lifespan checks).
+- Startup config loading/validation added (`backend/app/app_config.py` + API lifespan checks).
 - Upload API contract and ingestion job schema endpoints added (`/v1/uploads/...`).
 - Frontend smoke route test scaffolding added (Vitest route checks).
 

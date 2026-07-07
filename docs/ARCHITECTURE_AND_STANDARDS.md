@@ -2,8 +2,8 @@
 
 ## Current Architecture
 
-- Backend: FastAPI (`backend/support_api.py`)
-- Agent Orchestration: LangGraph (`backend/customer_support_agent.py`)
+- Backend: FastAPI (`backend/app/support_api.py`)
+- Agent Orchestration: LangGraph (`backend/app/customer_support_agent.py`)
 - LLM Provider: OpenAI via LangChain (`langchain-openai`)
 - Retrieval:
   - Local document fallback retriever

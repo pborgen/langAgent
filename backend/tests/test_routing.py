@@ -1,4 +1,4 @@
-from backend.customer_support_agent import choose_route
+from backend.app.customer_support_agent import choose_route
 
 
 def test_route_docs_for_policy_question() -> None:

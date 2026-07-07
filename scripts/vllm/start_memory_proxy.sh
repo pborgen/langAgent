@@ -66,4 +66,4 @@ export PROXY_API_KEY
 export MEMORY_MAX_MESSAGES
 
 echo "==> Starting vLLM memory proxy on http://$HOST:$PORT"
-exec uvicorn backend.vllm_memory_proxy:app --host "$HOST" --port "$PORT"
+exec uvicorn backend.app.vllm_memory_proxy:app --host "$HOST" --port "$PORT"

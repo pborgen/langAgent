@@ -1,7 +1,7 @@
 import pytest
 
-from backend.app_config import load_config, validate_config
-from backend.llm import build_chat_openai
+from backend.app.app_config import load_config, validate_config
+from backend.app.llm import build_chat_openai
 
 
 def _clear_env(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -2,7 +2,7 @@ from typing import Any
 
 from fastapi.testclient import TestClient
 
-from backend.support_api import app
+from backend.app.support_api import app
 
 
 class DummyAgent:

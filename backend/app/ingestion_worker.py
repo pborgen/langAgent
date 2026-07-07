@@ -3,7 +3,7 @@
 Reads files from storage_uri (local file paths), extracts text, chunks it,
 and writes to the knowledge_base/ directory (and optionally Pinecone).
 
-Can be run standalone:  python -m backend.ingestion_worker
+Can be run standalone:  python -m backend.app.ingestion_worker
 Or started as a background thread via start_worker().
 """
 
